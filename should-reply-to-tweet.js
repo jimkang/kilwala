@@ -10,7 +10,7 @@ var username = behavior.twitterUsername;
 function shouldReplyToTweet(opts, done) {
   var tweet;
   var chronicler;
-  var waitingPeriod;
+  var waitingPeriod = behavior.hoursToWaitBetweenRepliesToSameUser;
 
   if (opts) {
     tweet = opts.tweet;
@@ -27,21 +27,8 @@ function shouldReplyToTweet(opts, done) {
     return;
   }
 
-  var tweetMentionsBot = doesTweetMentionBot(tweet);
-debugger;
-  if (behavior.chimeInUsers &&
-    behavior.chimeInUsers.indexOf(tweet.user.screen_name) !== -1 &&
-    !tweetMentionsBot) {
-
-    // Chiming in.
-    waitingPeriod = behavior.hoursToWaitBetweenChimeIns;
-  }
-  else if (tweetMentionsBot) {
-    // Replying.
-    waitingPeriod = behavior.hoursToWaitBetweenRepliesToSameUser;
-  }
-  else {
-    callNextTick(done, new Error('Not chiming in or replying.'));
+  if (!doesTweetMentionBot(tweet)) {
+    callNextTick(done, new Error('Not mentioned; not replying.'));
     return;
   }
 
