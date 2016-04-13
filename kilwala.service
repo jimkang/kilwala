@@ -1,0 +1,13 @@
+[Unit]
+Description=kilwala
+After=network.target
+[Service]
+ExecStart=/var/apps/kilwala/kilwala-responder.js
+Restart=always
+User=app
+Group=app
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/var/apps/kilwala
+[Install]
+WantedBy=multi-user.target
