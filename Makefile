@@ -1,24 +1,41 @@
-HOMEDIR = $(shell pwd)
-SSHCMD = ssh $(SMUSER)@smidgeo-headporters
 PROJECTNAME = kilwala
-APPDIR = /var/apps/$(PROJECTNAME)
+HOMEDIR = $(shell pwd)
+USER = bot
+PRIVUSER = root
+SERVER = smidgeo
+SSHCMD = ssh $(USER)@$(SERVER)
+PRIVSSHCMD = ssh $(PRIVUSER)@$(SERVER)
+APPDIR = /opt/$(PROJECTNAME)
 
-pushall: sync restart-remote
+pushall: sync set-permissions restart-remote
 	git push origin master
 
 sync:
-	rsync -a $(HOMEDIR) $(SMUSER)@smidgeo-headporters:/var/apps/ --exclude node_modules/ --exclude data/
-	ssh $(SMUSER)@smidgeo-headporters "cd /var/apps/$(PROJECTNAME) && npm install"
-
-restart-remote:
-	$(SSHCMD) "systemctl restart $(PROJECTNAME)"
+	rsync -a $(HOMEDIR) $(USER)@$(SERVER):/opt/ --exclude node_modules/ --exclude data/
+	$(SSHCMD) "cd $(APPDIR) && npm install && npm prune"
 
 set-permissions:
-	$(SSHCMD) "chmod +x $(APPDIR)/kilwala-responder.js && \
-	chmod 777 -R $(APPDIR)/data/$(PROJECTNAME)-chronicler.db"
+	$(SSHCMD) "chmod +x $(APPDIR)/$(PROJECTNAME)-responder.js" # && \
+	# chmod 777 -R $(APPDIR)/data/$(PROJECTNAME)-chronicler.db"
 
 update-remote: sync set-permissions restart-remote
 
+restart-remote:
+	$(PRIVSSHCMD) "service $(PROJECTNAME) restart"
+
 install-service:
-	$(SSHCMD) "cp $(APPDIR)/$(PROJECTNAME).service /etc/systemd/system && \
-	systemctl daemon-reload"
+	$(PRIVSSHCMD) "cp $(APPDIR)/$(PROJECTNAME).service /etc/systemd/system && \
+	systemctl enable $(PROJECTNAME)"
+
+stop-remote:
+	$(PRIVSSHCMD) "service $(PROJECTNAME) stop"
+
+check-status:
+	$(SSHCMD) "systemctl status $(PROJECTNAME)"
+
+check-log:
+	$(SSHCMD) "journalctl -r -u $(PROJECTNAME)"
+
+make-data-dir:
+	$(SSHCMD) "mkdir -p $(APPDIR)/data"
+

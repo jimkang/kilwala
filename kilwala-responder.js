@@ -3,7 +3,7 @@
 var config = require('./config/config');
 var callNextTick = require('call-next-tick');
 var Twit = require('twit');
-var async = require('async');
+var waterfall = require('async-waterfall');
 var createChronicler = require('basicset-chronicler').createChronicler;
 var behavior = require('./behavior');
 var shouldReplyToTweet = require('./should-reply-to-tweet');
@@ -34,7 +34,7 @@ stream.on('tweet', respondToTweet);
 stream.on('error', logError);
 
 function respondToTweet(tweet) {
-  async.waterfall(
+  waterfall(
     [
       checkIfWeShouldReply,
       composeReply,
