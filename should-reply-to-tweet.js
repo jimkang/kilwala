@@ -1,7 +1,7 @@
 var config = require('./config/config');
 var callNextTick = require('call-next-tick');
 var betterKnowATweet = require('better-know-a-tweet');
-var async = require('async');
+var waterfall = require('async-waterfall');
 var behavior = require('./behavior');
 
 var username = behavior.twitterUsername;
@@ -32,7 +32,7 @@ function shouldReplyToTweet(opts, done) {
     return;
   }
 
-  async.waterfall(
+  waterfall(
     [
       goFindLastReplyDate,
       replyDateWasNotTooRecent
