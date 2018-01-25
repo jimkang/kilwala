@@ -39,3 +39,5 @@ check-log:
 make-data-dir:
 	$(SSHCMD) "mkdir -p $(APPDIR)/data"
 
+prettier:
+	prettier --single-quote --write "**/*.js"

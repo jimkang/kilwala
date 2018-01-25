@@ -1,4 +1,3 @@
-var config = require('./config/config');
 var callNextTick = require('call-next-tick');
 var betterKnowATweet = require('better-know-a-tweet');
 var waterfall = require('async-waterfall');
@@ -32,13 +31,7 @@ function shouldReplyToTweet(opts, done) {
     return;
   }
 
-  waterfall(
-    [
-      goFindLastReplyDate,
-      replyDateWasNotTooRecent
-    ],
-    done
-  );
+  waterfall([goFindLastReplyDate, replyDateWasNotTooRecent], done);
 
   function goFindLastReplyDate(done) {
     findLastReplyDateForUser(tweet, done);
@@ -46,7 +39,8 @@ function shouldReplyToTweet(opts, done) {
 
   function findLastReplyDateForUser(tweet, done) {
     chronicler.whenWasUserLastRepliedTo(
-      tweet.user.id.toString(), passLastReplyDate
+      tweet.user.id.toString(),
+      passLastReplyDate
     );
 
     function passLastReplyDate(error, date) {
@@ -68,18 +62,18 @@ function shouldReplyToTweet(opts, done) {
 
     if (hoursElapsed > waitingPeriod) {
       done();
-    }
-    else {
-      done(new Error(
-        `Replied ${hoursElapsed} hours ago to ${tweet.user.screen_name}.
+    } else {
+      done(
+        new Error(
+          `Replied ${hoursElapsed} hours ago to ${tweet.user.screen_name}.
         Need at least ${waitingPeriod} to pass.`
-      ));
+        )
+      );
     }
   }
 }
 
 function doesTweetMentionBot(tweet) {
-  debugger;
   var usernames = betterKnowATweet.whosInTheTweet(tweet).map(lowerCase);
   return usernames && usernames.indexOf(username.toLowerCase()) !== -1;
 }

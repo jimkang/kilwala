@@ -1,20 +1,18 @@
 #!/usr/bin/env node
+/* global process, __dirname */
 
 var config = require('./config/config');
 var callNextTick = require('call-next-tick');
 var Twit = require('twit');
 var waterfall = require('async-waterfall');
 var createChronicler = require('basicset-chronicler').createChronicler;
-var behavior = require('./behavior');
 var shouldReplyToTweet = require('./should-reply-to-tweet');
 var ComposeKilwalaReply = require('./compose-kilwala-reply');
 
 var dryRun = false;
 if (process.argv.length > 2) {
-  dryRun = (process.argv[2].toLowerCase() == '--dry');
+  dryRun = process.argv[2].toLowerCase() == '--dry';
 }
-
-var username = behavior.twitterUsername;
 
 var chronicler = createChronicler({
   dbLocation: __dirname + '/data/kilwala-chronicler.db'
@@ -35,12 +33,7 @@ stream.on('error', logError);
 
 function respondToTweet(tweet) {
   waterfall(
-    [
-      checkIfWeShouldReply,
-      composeReply,
-      postTweet,
-      recordThatReplyHappened
-    ],
+    [checkIfWeShouldReply, composeReply, postTweet, recordThatReplyHappened],
     wrapUp
   );
 
@@ -61,12 +54,11 @@ function respondToTweet(tweet) {
       console.log('Would have tweeted:', text);
       var mockTweetData = {
         user: {
-          id_str: 'mockuser',        
+          id_str: 'mockuser'
         }
       };
       callNextTick(done, null, mockTweetData);
-    }
-    else {
+    } else {
       var body = {
         status: text,
         in_reply_to_status_id: tweet.id_str
@@ -78,7 +70,6 @@ function respondToTweet(tweet) {
 
 function recordThatReplyHappened(tweetData, response, done) {
   var userId = tweetData.user.id_str;
-  debugger;
   chronicler.recordThatUserWasRepliedTo(userId, done);
 }
 

@@ -1,12 +1,10 @@
 var moment = require('moment');
 var probable = require('probable');
 
-var magicTabLine = "Man, you're nosy. Here, take this.\n\n[Received 1 Magic Tab!]";
+var magicTabLine =
+  "Man, you're nosy. Here, take this.\n\n[Received 1 Magic Tab!]";
 
-var smallTalkLines = [
-  "Mountains're nice.",
-  "This's the life."
-];
+var smallTalkLines = ["Mountains're nice.", "This's the life."];
 
 function ComposeKilwalaReply(opts) {
   var db;
@@ -24,31 +22,27 @@ function ComposeKilwalaReply(opts) {
       if (error) {
         if (error.type !== 'NotFoundError') {
           done(error);
-        }
-        else {
+        } else {
           replyWithMagicTab();
         }
-      }
-      else {
+      } else {
         var oneDayAgo = moment().subtract(1, 'day');
         var lastTabDate = moment(lastTabDateString);
         if (lastTabDate.isBefore(oneDayAgo)) {
           replyWithMagicTab();
-        }
-        else {
+        } else {
           done(null, prefix + probable.pickFromArray(smallTalkLines));
         }
       }
     }
 
     function replyWithMagicTab() {
-      db.put(getMagicTabDbKey(tweet), (new Date()).toISOString(), sendTab);
+      db.put(getMagicTabDbKey(tweet), new Date().toISOString(), sendTab);
 
       function sendTab(error) {
         if (error) {
           done(error);
-        }
-        else {
+        } else {
           done(null, prefix + magicTabLine);
         }
       }
